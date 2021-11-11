@@ -1,0 +1,28 @@
+FROM balenalib/%%BALENA_MACHINE_NAME%%-alpine-golang as builder
+
+ENV GO111MODULE=on \
+  CGO_ENABLED=0
+
+WORKDIR /src
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+
+# This step is required to create dir vendor
+RUN go mod vendor
+
+RUN go build \
+  -mod=vendor \
+  -o /bin/service \
+  ./main.go
+
+RUN strip /bin/service
+
+
+FROM scratch
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=builder /bin/service /bin/service
+
+ENV PORT 9001
+
+ENTRYPOINT ["/bin/service"]

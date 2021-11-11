@@ -1,0 +1,45 @@
+version: "2.0"
+
+networks:
+  consul:
+    driver: bridge
+volumes:
+  consul-certs:
+  consul-cfg-client:
+  consul-cfg-server1:
+  consul-data-client:
+  consul-data-server1:
+services:
+  consul-server1:
+    image: consul:1.10.3
+    container_name: consul-server1
+    restart: always
+    volumes:
+      - consul-certs:/consul/config/certs
+      - consul-cfg-server1:/consul/config
+      - consul-data-server1:/consul/data
+    networks:
+      - consul
+    ports:
+      - "80:8500"
+      - "8600:8600/tcp"
+      - "8600:8600/udp"
+    command: "agent -bootstrap-expect=1"
+  consul-client:
+    image: consul:1.10.3
+    container_name: consul-client
+    restart: always
+    volumes:
+      - consul-certs:/consul/config/certs
+      - consul-cfg-client:/consul/config
+      - consul-data-client:/consul/data
+    networks:
+      - consul
+    command: "agent"
+  counting-service:
+    build:
+      context: ./counting-service
+    container_name: counting-service
+    restart: always
+    ports:
+      - "9001:9001"

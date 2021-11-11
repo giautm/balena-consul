@@ -1,0 +1,9 @@
+{
+  "service": {
+    "name": "counting",
+    "tags": [
+      "go"
+    ],
+    "port": 9001
+  }
+}
